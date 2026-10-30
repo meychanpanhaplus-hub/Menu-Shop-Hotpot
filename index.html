@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Little Chef Hotpot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #140d0b;
+      --card: #221612;
+      --border: #3d2821;
+      --primary: #e03e1a;
+      --gold: #f5a623;
+      --text: #ffffff;
+      --muted: #9e8c85;
+      --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Kantumruy Pro", "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(20, 13, 11, 0.95); z-index: 10; backdrop-filter: blur(8px); }
+    .brand-wrap { display: flex; align-items: center; gap: 10px; }
+    .brand-logo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
+    .brand { font-size: 17px; font-weight: 700; color: var(--gold); }
+    .nav-btns button { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; margin-left: 4px; }
+    .nav-btns button.active { background: var(--gold); color: #000; font-weight: 700; border-color: var(--gold); }
+    .container { padding: 14px; max-width: 520px; margin: 0 auto; }
+    .banner-img { width: 100%; height: 150px; object-fit: cover; border-radius: 14px; margin-bottom: 14px; border: 1px solid var(--border); }
+    .pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 12px; scrollbar-width: none; }
+    .pills::-webkit-scrollbar { display: none; }
+    .pill { background: var(--card); color: var(--muted); border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; font-size: 13px; white-space: nowrap; cursor: pointer; }
+    .pill.active { background: var(--gold); color: #000; font-weight: 700; border-color: var(--gold); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 14px; position: relative; }
+    .dish-top { display: flex; gap: 12px; margin-bottom: 10px; }
+    .dish-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: #160e0b; }
+    .dish-info { flex: 1; }
+    .dish-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .dish-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .sold-badge { background: #991b1b; color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; margin-left: 6px; }
+    .size-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0; }
+    .size-btn { background: #19100d; border: 1px solid var(--border); color: var(--muted); padding: 7px 3px; border-radius: 8px; text-align: center; font-size: 12px; cursor: pointer; }
+    .size-btn.active { border-color: var(--gold); color: var(--gold); font-weight: 700; background: rgba(245, 166, 35, 0.14); }
+    .size-btn span { display: block; font-size: 11px; color: var(--text); margin-top: 2px; }
+    .btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; display: inline-block; text-decoration: none; }
+    .btn:disabled { background: #3d2a25; color: #8c7670; cursor: not-allowed; opacity: 0.7; }
+    .btn-secondary { background: #2c1d18; border: 1px solid var(--border); color: var(--text); }
+    .btn-gps { background: #15803d; border: 1px solid #4ade80; color: #ffffff; margin-top: 6px; margin-bottom: 10px; font-size: 13px; padding: 11px; }
+    .btn-store-map { background: #1e293b; border: 1px solid var(--gold); color: var(--gold); margin-bottom: 14px; font-size: 13px; padding: 10px; border-radius: 10px; display: block; text-align: center; text-decoration: none; font-weight: 600; }
+    .btn-sm { padding: 7px 12px; font-size: 12px; width: auto; border-radius: 8px; }
+    input, select, textarea { width: 100%; background: #160e0b; border: 1px solid var(--border); color: #fff; padding: 11px; border-radius: 10px; margin-top: 5px; margin-bottom: 12px; font-size: 14px; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+    .pay-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    .pay-box { background: #180f0c; border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+    .pay-box .curr { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+    .pay-box .amt-usd { font-size: 22px; font-weight: 800; margin-top: 4px; }
+    .pay-box .amt-khr { font-size: 20px; font-weight: 800; color: var(--gold); margin-top: 4px; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1e1310; border-top: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 20; max-width: 520px; margin: 0 auto; }
+    .hidden { display: none !important; }
+    .qr-img { max-width: 210px; border-radius: 12px; margin: 10px auto; display: block; border: 2px solid var(--border); }
+    .slip-preview { max-width: 180px; max-height: 220px; border-radius: 10px; margin: 10px auto; display: block; border: 2px solid var(--green); object-fit: contain; }
+    .badge { background: #2d1f1a; color: var(--gold); padding: 3px 8px; border-radius: 6px; font-size: 11px; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .type-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .type-tab { flex: 1; background: #160e0b; border: 1px solid var(--border); color: var(--muted); padding: 10px 6px; border-radius: 10px; text-align: center; font-size: 13px; cursor: pointer; font-weight: 600; }
+    .type-tab.active { border-color: var(--gold); color: #000; background: var(--gold); }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .toggle-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .toggle-on { background: var(--green); color: #000; }
+    .toggle-off { background: #4a352f; color: #cbb8b2; }
+    .upload-box { border: 2px dashed var(--gold); background: rgba(245, 166, 35, 0.06); padding: 14px; border-radius: 12px; text-align: center; margin-top: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-wrap">
+      <img id="header-logo" src="https://cdn-icons-png.flaticon.com/512/3183/3183463.png" class="brand-logo" alt="Logo">
+      <div class="brand" id="app-title">Little Chef Hotpot</div>
+    </div>
+    <div class="nav-btns">
+      <button onclick="showPage('menu')" id="nav-menu" class="active">Menu</button>
+      <button onclick="showPage('track')" id="nav-track">Track</button>
+      <button onclick="openAdmin()" id="nav-admin">Staff</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="page-menu">
+      <img id="store-banner" class="banner-img hidden" src="" alt="Banner">
+      <div class="pills" id="category-pills"></div>
+      <div id="menu-list"></div>
+    </div>
+
+    <div id="page-payment" class="hidden">
+      <button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="showPage('menu')">← ត្រឡប់ទៅមុខម្ហូប (Back)</button>
+      
+      <div class="card">
+        <div style="text-align:center; color:var(--gold); font-weight:700; font-size:15px;" id="order-id-Label">ORDER LC-0001</div>
+        <div class="pay-boxes">
+          <div class="pay-box">
+            <div class="curr">សរុបជាដុល្លារ (USD)</div>
+            <div class="amt-usd" id="pay-usd">$0.00</div>
+          </div>
+          <div class="pay-box">
+            <div class="curr">សរុបជារៀល (KHR)</div>
+            <div class="amt-khr" id="pay-khr">៛0</div>
+          </div>
+        </div>
+        <div style="text-align:center; font-size:12px; color:var(--muted);" id="rate-label">Rate: 1 USD = ៛4,100</div>
+      </div>
+
+      <div class="card" id="cart-items-box"></div>
+
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:10px;">
+          <h4 style="color:var(--gold);">📍 ព័ត៌មានដឹកជញ្ជូន (Delivery Details)</h4>
+          <button id="quick-edit-del-btn" class="btn btn-sm btn-secondary hidden" onclick="openAdminDeliveryTab()">⚙️ កែបិទ/បើក</button>
+        </div>
+        
+        <div class="type-tabs" id="order-type-tabs">
+          <div class="type-tab active" id="tab-delivery" onclick="setOrderType('Delivery')">🛵 ដឹកជញ្ជូន</div>
+          <div class="type-tab" id="tab-pickup" onclick="setOrderType('Pick Up')">🛍️ ខ្ចប់យកផ្ទាល់</div>
+          <div class="type-tab" id="tab-dinein" onclick="setOrderType('Dine-in')">🍽️ ញ៉ាំនៅហាង</div>
+        </div>
+
+        <div id="store-map-box" class="hidden">
+          <a id="store-map-link" href="#" target="_blank" class="btn-store-map">🗺️ មើលទីតាំងហាងលើ Google Maps (Store Location)</a>
+        </div>
+
+        <div id="wrap-name">
+          <label>ឈ្មោះអតិថិជន (Customer Name) *</label>
+          <input type="text" id="cust-name" placeholder="ឧ. បងសុខា / Sokha">
+        </div>
+
+        <div id="wrap-phone">
+          <label>លេខទូរស័ព្ទទំនាក់ទំនង (Phone Number) *</label>
+          <input type="tel" id="cust-phone" placeholder="ឧ. 012 345 678 / 096 123 4567">
+        </div>
+
+        <div id="delivery-fields">
+          <div id="wrap-zone">
+            <label>តំបន់ដឹកជញ្ជូន / ខណ្ឌ (Delivery Zone & Fee)</label>
+            <select id="cust-zone">
+              <option value="0.00" id="zone-option-text" selected>គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក</option>
+            </select>
+          </div>
+
+          <div id="wrap-gps">
+            <label>ទីតាំង GPS (Google Maps Link)</label>
+            <button type="button" class="btn btn-gps" onclick="getGPSLocation()" id="gps-btn">📍 ចុចទីនេះដើម្បីចាប់យកទីតាំងបច្ចុប្បន្ន (Get GPS)</button>
+            <input type="text" id="cust-gps" placeholder="លីង Google Maps ឬកូអរដោណេ GPS (បើមាន)">
+          </div>
+
+          <div id="wrap-address">
+            <label>អាសយដ្ឋានលម្អិត (ផ្ទះលេខ, ផ្លូវ, សង្កាត់) *</label>
+            <input type="text" id="cust-address" placeholder="ឧ. ផ្ទះលេខ 12A ផ្លូវ 2004 សង្កាត់ទឹកថ្លា">
+          </div>
+
+          <div id="wrap-landmark">
+            <label>កន្លែងសម្គាល់ (Landmark / ជិតអ្វីដែរ?)</label>
+            <input type="text" id="cust-landmark" placeholder="ឧ. ទល់មុខសាលាបឋម ឬ ជាប់ម៉ាត 7-Eleven">
+          </div>
+
+          <div id="wrap-delnote">
+            <label>កំណត់ចំណាំសម្រាប់អ្នកដឹក (Delivery Note)</label>
+            <input type="text" id="cust-del-note" placeholder="ឧ. ដល់មុខផ្ទះជួយខលប្រាប់ផង / ផ្ញើអ្នកយាម">
+          </div>
+        </div>
+
+        <div id="dinein-fields" class="hidden">
+          <div id="wrap-table">
+            <label>លេខតុ (Table Number) *</label>
+            <input type="text" id="cust-table" placeholder="ឧ. តុលេខ 5 (Table 5)">
+          </div>
+        </div>
+
+        <div id="wrap-cutlery">
+          <label>សម្ភារៈបន្ថែម (Cutlery)</label>
+          <select id="cust-pref">
+            <option value="យកស្លាបព្រា/ចង្កឹះធម្មតា">🥢 យកស្លាបព្រា និងចង្កឹះ (Include Cutlery)</option>
+            <option value="មិនយកស្លាបព្រា/ចង្កឹះទេ">🌿 មិនយកស្លាបព្រា/ចង្កឹះ (No Cutlery)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <h4 style="margin-bottom:10px; color:var(--gold); text-align:left;">💳 វិធីទូទាត់ប្រាក់ (Payment Method)</h4>
+        <select id="pay-method" onchange="togglePayMethod()">
+          <option value="KHQR / Bank Transfer">📲 ស្កេន KHQR / បាញ់តាម ABA</option>
+          <option value="Cash on Delivery (គិតលុយពេលដឹកដល់)" id="cod-option">💵 គិតលុយពេលដឹកដល់ (Cash on Delivery)</option>
+        </select>
+        <div id="khqr-section"></div>
+
+        <div id="upload-slip-wrap" style="text-align:left; margin-top:12px;">
+          <label style="color:var(--gold); font-weight:700;">📸 បង្ហោះរូបភាពវិក្កយបត្របង់ប្រាក់ (Upload Payment Screenshot) *</label>
+          <div class="upload-box" onclick="document.getElementById('pay-slip-file').click()">
+            <div id="upload-slip-label" style="font-size:13px; color:var(--text);">📤 ចុចទីនេះដើម្បីជ្រើសរើសរូបភាពបង់ប្រាក់ពីទូរស័ព្ទ</div>
+            <input type="file" id="pay-slip-file" accept="image/*" style="display:none;" onchange="handleSlipUpload(this)">
+            <img id="pay-slip-preview" class="slip-preview hidden" src="" alt="Payment Slip">
+          </div>
+          <input type="hidden" id="pay-slip-data">
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Payment note (លេខកូដ ៤ ខ្ទង់ចុងក្រោយ ឬចំណាំបង់ប្រាក់)</label>
+        <input type="text" id="pay-note" placeholder="e.g. ABA 1234, last 4 digits">
+        <button class="btn" id="confirm-order-btn" onclick="confirmPayment()" disabled>🔒 សូមបង្ហោះរូបភាពបង់ប្រាក់ជាមុនសិន</button>
+      </div>
+    </div>
+
+    <div id="page-track" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:10px;">តាមដានការកុម្ម៉ង់ (Track Order)</h3>
+        <label>លេខកូដកុម្ម៉ង់ ឬ លេខទូរស័ព្ទ (Order No or Phone)</label>
+        <input type="text" id="track-input" placeholder="e.g. LC-0001 or 012345678">
+        <button class="btn" onclick="findOrder()">ស្វែងរក (Find Order)</button>
+      </div>
+      <div id="track-results"></div>
+    </div>
+
+    <div id="page-admin" class="hidden">
+      <div class="pay-boxes" style="margin-top:0;">
+        <div class="pay-box" style="text-align:left;">
+          <div class="curr">ORDERS</div>
+          <div class="amt-usd" id="stat-orders">0</div>
+        </div>
+        <div class="pay-box" style="text-align:left;">
+          <div class="curr">REVENUE</div>
+          <div class="amt-khr" id="stat-revenue">$0.00</div>
+        </div>
+      </div>
+
+      <div class="pills">
+        <div class="pill active" id="pill-items" onclick="showAdminTab('items', this)">Menu</div>
+        <div class="pill" id="pill-cats" onclick="showAdminTab('cats', this)">Categories</div>
+        <div class="pill" id="pill-delivery" onclick="showAdminTab('delivery', this)">Delivery</div>
+        <div class="pill" id="pill-branding" onclick="showAdminTab('branding', this)">Branding</div>
+        <div class="pill" id="pill-payments" onclick="showAdminTab('payments', this)">Payments</div>
+        <div class="pill" id="pill-orders" onclick="showAdminTab('orders', this)">Orders</div>
+        <div class="pill" id="pill-staff" onclick="showAdminTab('staff', this)">Staff</div>
+      </div>
+
+      <div id="admin-items">
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">បន្ថែមមុខម្ហូបថ្មី (5 Sizes + Photo)</h4>
+          <label>ឈ្មោះមុខម្ហូប (Dish Name)</label>
+          <input type="text" id="dish-name" placeholder="e.g. ស៊ុបម៉ាឡាឈុតធំ / Mala Hotpot">
+          <label>ប្រភេទ (Category)</label>
+          <select id="dish-cat"></select>
+          <label>រូបភាពមុខម្ហូប (Upload ពីទូរស័ព្ទ ឬដាក់ Link)</label>
+          <input type="file" accept="image/*" onchange="uploadImage(this, 'dish-img-url')">
+          <input type="text" id="dish-img-url" placeholder="https://... (ឬជ្រើសរើសរូបខាងលើ)">
+          <label>តម្លៃសម្រាប់ទាំង ៥ ទំហំ (USD)</label>
+          <div class="size-grid">
+            <div><label>Mini</label><input type="number" step="0.5" id="p-mini" value="5.00"></div>
+            <div><label>S</label><input type="number" step="0.5" id="p-s" value="8.00"></div>
+            <div><label>M</label><input type="number" step="0.5" id="p-m" value="12.00"></div>
+            <div><label>L</label><input type="number" step="0.5" id="p-l" value="16.00"></div>
+            <div><label>XL</label><input type="number" step="0.5" id="p-xl" value="20.50"></div>
+          </div>
+          <button class="btn" onclick="saveDish()">+ រក្សាទុកមុខម្ហូប (Save Dish)</button>
+        </div>
+        <div id="admin-dish-list"></div>
+      </div>
+
+      <div id="admin-cats" class="hidden">
+        <div class="card">
+          <label>ឈ្មោះប្រភេទមុខម្ហូបថ្មី (New Category)</label>
+          <input type="text" id="new-cat-name" placeholder="e.g. ទឹកស៊ុប, សាច់គោ, បន្លែ, ភេសជ្ជៈ">
+          <button class="btn" onclick="addCategory()">បន្ថែមប្រភេទ (Add Category)</button>
+        </div>
+        <div id="admin-cat-list"></div>
+      </div>
+
+      <div id="admin-delivery" class="hidden">
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">🗺️ លីងទីតាំងហាង និងអក្សរថ្លៃដឹកជញ្ជូន</h4>
+          <label>លីង Google Maps របស់ហាង (បង្ហាញក្នុងព័ត៌មានដឹកជញ្ជូនទាំង ៣)</label>
+          <input type="text" id="cfg-store-map" placeholder="https://maps.app.goo.gl/...">
+          <label>អក្សរក្នុងប្រអប់តំបន់ដឹកជញ្ជូន (Edit អក្សរបាន)</label>
+          <input type="text" id="cfg-zone-text" value="គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក">
+          <button class="btn" onclick="saveDeliverySettings()">រក្សាទុកលីងហាង និងអក្សរដឹកជញ្ជូន</button>
+        </div>
+
+        <div class="card">
+          <h4 style="margin-bottom:6px; color:var(--gold);">⚙️ បិទ/បើក (ON / OFF) មុខងារក្នុងព័ត៌មានដឹកជញ្ជូន</h4>
+          <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">ចុចប៊ូតុងខាងក្រោមដើម្បីបើក (ON) ឬបិទ (OFF) មុខងារនីមួយៗ៖</p>
+          <div id="delivery-toggles-list"></div>
+        </div>
+      </div>
+
+      <div id="admin-branding" class="hidden">
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">Store Branding (Logo & Banner)</h4>
+          <label>ឈ្មោះហាង (Store Name)</label>
+          <input type="text" id="cfg-store-name" placeholder="Little Chef Hotpot">
+          <label>Logo ហាង (Upload ពីទូរស័ព្ទ ឬដាក់ Link)</label>
+          <input type="file" accept="image/*" onchange="uploadImage(this, 'cfg-logo')">
+          <input type="text" id="cfg-logo" placeholder="Logo Image URL">
+          <label>ផ្ទាំងបដាខាងលើ (Banner Image Upload ឬ Link)</label>
+          <input type="file" accept="image/*" onchange="uploadImage(this, 'cfg-banner')">
+          <input type="text" id="cfg-banner" placeholder="Banner Image URL">
+          <button class="btn" onclick="saveBranding()">Save Branding</button>
+        </div>
+      </div>
+
+      <div id="admin-payments" class="hidden">
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">KHQR & Payment Settings</h4>
+          <label>អត្រាប្តូរប្រាក់ (1 USD = ? KHR)</label>
+          <input type="number" id="cfg-rate" value="4100">
+          <label>រូបភាព KHQR (ចុច Upload រូប QR ពីទូរស័ព្ទផ្ទាល់)</label>
+          <input type="file" accept="image/*" onchange="uploadImage(this, 'cfg-qr')">
+          <input type="text" id="cfg-qr" placeholder="KHQR Image Data / URL">
+          <label>លីងបង់ប្រាក់ដុល្លារ (ABA Pay USD Link)</label>
+          <input type="text" id="cfg-usd-link" placeholder="https://pay.ababank.com/...">
+          <label>លីងបង់ប្រាក់រៀល (ABA Pay KHR Link)</label>
+          <input type="text" id="cfg-khr-link" placeholder="https://pay.ababank.com/...">
+          <button class="btn" onclick="savePaymentSettings()">Save Payment Settings</button>
+        </div>
+      </div>
+
+      <div id="admin-orders" class="hidden">
+        <div id="admin-order-list"></div>
+      </div>
+
+      <div id="admin-staff" class="hidden">
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">CHANGE STAFF PIN</h4>
+          <label>New PIN (4–8 digits)</label>
+          <input type="password" id="cfg-pin" value="1234">
+          <button class="btn" onclick="saveStaffSettings()">Update PIN</button>
+        </div>
+        <div class="card">
+          <h4 style="margin-bottom:10px; color:var(--gold);">OWNER TELEGRAM IDS & BOT</h4>
+          <label>Owner Telegram IDs (One ID per line)</label>
+          <textarea id="cfg-owner-ids" rows="3" placeholder="123456789"></textarea>
+          <label>Telegram Bot Token (សម្រាប់ផ្ញើសារកុម្ម៉ង់ចូល Telegram ម្ចាស់ហាង)</label>
+          <input type="text" id="cfg-bot-token" placeholder="123456:ABC-DEF...">
+          <button class="btn" onclick="saveStaffSettings()">Save staff list</button>
+        </div>
+        <div class="card">
+          <h4 style="margin-bottom:6px; color:var(--gold);">SIGNED IN</h4>
+          <div id="signed-in-user" style="font-size:13px; color:var(--muted);">Mey @bloodcool518 • staff</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-bar hidden" id="cart-bar">
+    <div>
+      <div style="font-size:12px; color:var(--muted);" id="cart-count">0 items</div>
+      <div style="font-size:18px; font-weight:800; color:var(--gold);" id="cart-total">$0.00</div>
+    </div>
+    <button class="btn btn-sm" style="padding:10px 18px; font-size:14px;" onclick="goToCheckout()">កុម្ម៉ង់ឥឡូវ (Checkout) →</button>
+  </div>
+
+  <script>
+    const defaultDeliveryConfig = {
+      storeMapUrl: "",
+      zoneText: "គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក",
+      enableDeliveryTab: true,
+      enablePickupTab: true,
+      enableDineinTab: true,
+      showName: true,
+      showPhone: true,
+      showZone: true,
+      showGps: true,
+      showAddress: true,
+      showLandmark: true,
+      showDelNote: true,
+      showTable: true,
+      showCutlery: true,
+      requirePaySlip: true,
+      enableCOD: true
+    };
+
+    const defaultData = {
+      storeName: "Little Chef Hotpot",
+      logoUrl: "https://cdn-icons-png.flaticon.com/512/3183/3183463.png",
+      bannerUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=60",
+      rate: 4100,
+      qrUrl: "",
+      usdLink: "",
+      khrLink: "",
+      pin: "1234",
+      ownerIds: "123456789",
+      botToken: "",
+      deliveryConfig: defaultDeliveryConfig,
+      categories: ["ឈុតស៊ុប (Hotpot Sets)", "សាច់ (Meats)", "បន្លែ (Vegetables)", "ភេសជ្ជៈ (Drinks)"],
+      dishes: [
+        { id: 1, name: "ឈុតស៊ុបម៉ាឡាពិសេស (Mala Set)", cat: "ឈុតស៊ុប (Hotpot Sets)", img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=300&q=60", soldOut: false, sizes: { Mini: 6.5, S: 10.0, M: 14.5, L: 18.0, XL: 20.5 } },
+        { id: 2, name: "សាច់គោអាមេរិកហាន់ស្តើង (Sliced Beef)", cat: "សាច់ (Meats)", img: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=60", soldOut: false, sizes: { Mini: 4.0, S: 6.5, M: 9.0, L: 12.0, XL: 15.0 } },
+        { id: 3, name: "ឈុតបន្លែចម្រុះស្រស់ (Mixed Veggies)", cat: "បន្លែ (Vegetables)", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=60", soldOut: false, sizes: { Mini: 2.0, S: 3.5, M: 5.0, L: 6.5, XL: 8.0 } }
+      ],
+      orders: []
+    };
+
+    let db = JSON.parse(localStorage.getItem("lc_hotpot_v2")) || defaultData;
+    if (!db.deliveryConfig) {
+      db.deliveryConfig = { ...defaultDeliveryConfig };
+    } else {
+      db.deliveryConfig = { ...defaultDeliveryConfig, ...db.deliveryConfig };
+    }
+
+    let cart = [];
+    let activeCategory = "All";
+    let selectedSizes = {};
+    let orderType = "Delivery";
+    let adminUnlocked = false;
+
+    function saveDB() {
+      localStorage.setItem("lc_hotpot_v2", JSON.stringify(db));
+      applyBranding();
+    }
+
+    function applyBranding() {
+      document.getElementById("app-title").innerText = db.storeName || "Little Chef Hotpot";
+      if (db.logoUrl) document.getElementById("header-logo").src = db.logoUrl;
+      const bannerEl = document.getElementById("store-banner");
+      if (db.bannerUrl) {
+        bannerEl.src = db.bannerUrl;
+        bannerEl.classList.remove("hidden");
+      } else {
+        bannerEl.classList.add("hidden");
+      }
+    }
+
+    function uploadImage(input, targetInputId) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxW = 500;
+          const scale = maxW / img.width;
+          canvas.width = img.width > maxW ? maxW : img.width;
+          canvas.height = img.width > maxW ? img.height * scale : img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          document.getElementById(targetInputId).value = canvas.toDataURL("image/jpeg", 0.75);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleSlipUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxW = 550;
+          const scale = maxW / img.width;
+          canvas.width = img.width > maxW ? maxW : img.width;
+          canvas.height = img.width > maxW ? img.height * scale : img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+          document.getElementById("pay-slip-data").value = dataUrl;
+          const prev = document.getElementById("pay-slip-preview");
+          prev.src = dataUrl;
+          prev.classList.remove("hidden");
+          document.getElementById("upload-slip-label").innerText = "✅ បានជ្រើសរើសរូបភាពបង់ប្រាក់រួចរាល់ (ចុចដើម្បីប្តូររូប)";
+          updateConfirmButtonState();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateConfirmButtonState() {
+      const btn = document.getElementById("confirm-order-btn");
+      const slipData = document.getElementById("pay-slip-data").value;
+      const needSlip = db.deliveryConfig.requirePaySlip !== false;
+
+      if (needSlip && !slipData) {
+        btn.disabled = true;
+        btn.innerText = "🔒 សូមបង្ហោះរូបភាពបង់ប្រាក់ជាមុនសិន";
+      } else {
+        btn.disabled = false;
+        btn.innerText = "✅ បញ្ជាក់ការកុម្ម៉ង់ — Confirm Order";
+      }
+    }
+
+    function showPage(page) {
+      ["menu", "payment", "track", "admin"].forEach(p => {
+        document.getElementById("page-" + p).classList.add("hidden");
+      });
+      ["menu", "track", "admin"].forEach(n => {
+        const el = document.getElementById("nav-" + n);
+        if (el) el.classList.remove("active");
+      });
+      document.getElementById("page-" + page).classList.remove("hidden");
+      if (document.getElementById("nav-" + page)) {
+        document.getElementById("nav-" + page).classList.add("active");
+      }
+      updateCartBar();
+    }
+
+    function renderMenu() {
+      applyBranding();
+      const pillsEl = document.getElementById("category-pills");
+      const allCats = ["All", ...db.categories];
+      pillsEl.innerHTML = allCats.map(c => 
+        `<div class="pill ${activeCategory === c ? 'active' : ''}" onclick="setCategory('${c}')">${c}</div>`
+      ).join("");
+
+      const listEl = document.getElementById("menu-list");
+      const filtered = activeCategory === "All" ? db.dishes : db.dishes.filter(d => d.cat === activeCategory);
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="card" style="text-align:center; color:var(--muted);">មិនទាន់មានមុខម្ហូបក្នុងប្រភេទនេះទេ។</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(dish => {
+        const currentSize = selectedSizes[dish.id] || "M";
+        const sizeKeys = ["Mini", "S", "M", "L", "XL"];
+        const imgTag = dish.img ? `<img src="${dish.img}" class="dish-img" alt="${dish.name}">` : "";
+        return `
+          <div class="card" style="${dish.soldOut ? 'opacity:0.65;' : ''}">
+            <div class="dish-top">
+              ${imgTag}
+              <div class="dish-info">
+                <div class="dish-header">
+                  <div>
+                    <div class="dish-title">${dish.name} ${dish.soldOut ? '<span class="sold-badge">SOLD OUT</span>' : ''}</div>
+                    <span class="badge">${dish.cat}</span>
+                  </div>
+                  <div style="font-size:18px; font-weight:800; color:var(--gold);">$${Number(dish.sizes[currentSize]).toFixed(2)}</div>
+                </div>
+              </div>
+            </div>
+            <label>ជ្រើសរើសទំហំ (5 Sizes):</label>
+            <div class="size-grid">
+              ${sizeKeys.map(s => `
+                <div class="size-btn ${currentSize === s ? 'active' : ''}" onclick="selectSize(${dish.id}, '${s}')">
+                  ${s}
+                  <span>$${Number(dish.sizes[s]).toFixed(2)}</span>
+                </div>
+              `).join("")}
+            </div>
+            <button class="btn btn-sm" style="width:100%; margin-top:4px;" ${dish.soldOut ? 'disabled' : ''} onclick="addToCart(${dish.id})">
+              ${dish.soldOut ? '🚫 លក់អស់ហើយ (Sold Out)' : `+ ដាក់ចូលកន្ត្រក (${currentSize})`}
+            </button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setCategory(cat) { activeCategory = cat; renderMenu(); }
+    function selectSize(dishId, size) { selectedSizes[dishId] = size; renderMenu(); }
+
+    function addToCart(dishId) {
+      const dish = db.dishes.find(d => d.id === dishId);
+      if (dish.soldOut) return;
+      const size = selectedSizes[dishId] || "M";
+      const price = Number(dish.sizes[size]);
+      const existing = cart.find(item => item.dishId === dishId && item.size === size);
+      if (existing) existing.qty += 1;
+      else cart.push({ dishId, name: dish.name, size, price, qty: 1 });
+      updateCartBar();
+    }
+
+    function updateCartBar() {
+      const bar = document.getElementById("cart-bar");
+      const isMenuVisible = !document.getElementById("page-menu").classList.contains("hidden");
+      if (cart.length === 0 || !isMenuVisible) {
+        bar.classList.add("hidden");
+        return;
+      }
+      bar.classList.remove("hidden");
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+      const totalUsd = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById("cart-count").innerText = `${totalQty} មុខក្នុងកន្ត្រក`;
+      document.getElementById("cart-total").innerText = `$${totalUsd.toFixed(2)} (៛${Math.round(totalUsd * db.rate).toLocaleString()})`;
+    }
+
+    function applyDeliveryVisibility() {
+      const cfg = db.deliveryConfig;
+
+      document.getElementById("quick-edit-del-btn").classList.toggle("hidden", !adminUnlocked);
+
+      const tabDel = document.getElementById("tab-delivery");
+      const tabPick = document.getElementById("tab-pickup");
+      const tabDine = document.getElementById("tab-dinein");
+      tabDel.classList.toggle("hidden", !cfg.enableDeliveryTab);
+      tabPick.classList.toggle("hidden", !cfg.enablePickupTab);
+      tabDine.classList.toggle("hidden", !cfg.enableDineinTab);
+
+      if (orderType === "Delivery" && !cfg.enableDeliveryTab) {
+        orderType = cfg.enablePickupTab ? "Pick Up" : "Dine-in";
+      } else if (orderType === "Pick Up" && !cfg.enablePickupTab) {
+        orderType = cfg.enableDeliveryTab ? "Delivery" : "Dine-in";
+      } else if (orderType === "Dine-in" && !cfg.enableDineinTab) {
+        orderType = cfg.enableDeliveryTab ? "Delivery" : "Pick Up";
+      }
+
+      tabDel.classList.toggle("active", orderType === "Delivery");
+      tabPick.classList.toggle("active", orderType === "Pick Up");
+      tabDine.classList.toggle("active", orderType === "Dine-in");
+
+      const storeMapBox = document.getElementById("store-map-box");
+      const storeMapLink = document.getElementById("store-map-link");
+      if (cfg.storeMapUrl && cfg.storeMapUrl.trim() !== "") {
+        storeMapLink.href = cfg.storeMapUrl.trim();
+        storeMapBox.classList.remove("hidden");
+      } else {
+        storeMapBox.classList.add("hidden");
+      }
+
+      document.getElementById("zone-option-text").innerText = cfg.zoneText || "គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក";
+
+      document.getElementById("wrap-name").classList.toggle("hidden", !cfg.showName);
+      document.getElementById("wrap-phone").classList.toggle("hidden", !cfg.showPhone);
+      document.getElementById("wrap-zone").classList.toggle("hidden", !cfg.showZone);
+      document.getElementById("wrap-gps").classList.toggle("hidden", !cfg.showGps);
+      document.getElementById("wrap-address").classList.toggle("hidden", !cfg.showAddress);
+      document.getElementById("wrap-landmark").classList.toggle("hidden", !cfg.showLandmark);
+      document.getElementById("wrap-delnote").classList.toggle("hidden", !cfg.showDelNote);
+      document.getElementById("wrap-table").classList.toggle("hidden", !cfg.showTable);
+      document.getElementById("wrap-cutlery").classList.toggle("hidden", !cfg.showCutlery);
+
+      document.getElementById("delivery-fields").classList.toggle("hidden", orderType !== "Delivery");
+      document.getElementById("dinein-fields").classList.toggle("hidden", orderType !== "Dine-in");
+
+      const codOpt = document.getElementById("cod-option");
+      if (codOpt) codOpt.disabled = !cfg.enableCOD;
+      if (!cfg.enableCOD && document.getElementById("pay-method").value.includes("Cash")) {
+        document.getElementById("pay-method").value = "KHQR / Bank Transfer";
+      }
+
+      document.getElementById("upload-slip-wrap").classList.toggle("hidden", !cfg.requirePaySlip);
+      updateConfirmButtonState();
+    }
+
+    function setOrderType(type) {
+      orderType = type;
+      applyDeliveryVisibility();
+      goToCheckout();
+    }
+
+    function getGPSLocation() {
+      const btn = document.getElementById("gps-btn");
+      if (!navigator.geolocation) {
+        alert("ទូរស័ព្ទរបស់អ្នកមិនគាំទ្រការចាប់ទីតាំង GPS ទេ។");
+        return;
+      }
+      btn.innerText = "⏳ កំពុងចាប់យកទីតាំង GPS...";
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          const mapLink = `https://maps.google.com/?q=${lat},${lng}`;
+          document.getElementById("cust-gps").value = mapLink;
+          btn.innerText = "✅ បានចាប់យកទីតាំង GPS រួចរាល់!";
+        },
+        err => {
+          btn.innerText = "📍 ចុចទីនេះដើម្បីចាប់យកទីតាំងបច្ចុប្បន្ន (Get GPS)";
+          alert("មិនអាចចាប់យក GPS បានទេ សូមបើក Location លើទូរស័ព្ទ ឬវាយអាសយដ្ឋានផ្ទាល់។");
+        }
+      );
+    }
+
+    function goToCheckout() {
+      if (cart.length === 0) return;
+      applyDeliveryVisibility();
+
+      const nextNum = String(db.orders.length + 1).padStart(4, "0");
+      document.getElementById("order-id-Label").innerText = `ORDER LC-${nextNum}`;
+
+      const totalUsd = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const totalKhr = Math.round(totalUsd * db.rate);
+
+      document.getElementById("pay-usd").innerText = `$${totalUsd.toFixed(2)}`;
+      document.getElementById("pay-khr").innerText = `៛${totalKhr.toLocaleString()}`;
+      document.getElementById("rate-label").innerText = `Rate: 1 USD = ៛${Number(db.rate).toLocaleString()} (${db.deliveryConfig.zoneText})`;
+
+      const cartBox = document.getElementById("cart-items-box");
+      cartBox.innerHTML = `<h4 style="margin-bottom:8px; color:var(--gold);">មុខម្ហូបដែលបានជ្រើសរើស</h4>` + cart.map((i, idx) => `
+        <div class="flex-between" style="padding:6px 0; border-bottom:1px solid var(--border); font-size:14px;">
+          <div>${i.name} <span class="badge">${i.size}</span> x ${i.qty}</div>
+          <div>
+            $${(i.price * i.qty).toFixed(2)}
+            <button onclick="removeCartItem(${idx})" style="background:none; border:none; color:#ff6b6b; margin-left:8px; cursor:pointer;">✕</button>
+          </div>
+        </div>
+      `).join("");
+
+      togglePayMethod();
+      showPage("payment");
+    }
+
+    function togglePayMethod() {
+      const method = document.getElementById("pay-method").value;
+      const qrSec = document.getElementById("khqr-section");
+      if (method.includes("Cash")) {
+        qrSec.innerHTML = `<div style="color:var(--green); font-size:13px; padding:8px;">គិតលុយពេលដឹកដល់ (សូមបង្ហោះរូបភាពបញ្ជាក់ ឬរូបភាពទីតាំង/វិក្កយបត្រខាងក្រោមដើម្បីបញ្ជាក់ការកុម្ម៉ង់)។</div>`;
+        updateConfirmButtonState();
+        return;
+      }
+      let qrHtml = "";
+      if (db.qrUrl) {
+        qrHtml += `<div style="font-weight:600; margin-bottom:6px; font-size:13px;">ស្កេន KHQR ខាងក្រោមដើម្បីទូទាត់ប្រាក់</div><img src="${db.qrUrl}" class="qr-img" alt="KHQR">`;
+      } else {
+        qrHtml += `<div style="color:var(--muted); font-size:13px; margin-bottom:10px;">No KHQR image has been set up yet. Please use the USD or KHR payment link below.</div>`;
+      }
+      if (db.usdLink) {
+        qrHtml += `<a href="${db.usdLink}" target="_blank" class="btn" style="margin-bottom:8px; background:#005a87;">💳 ចុចបង់ប្រាក់តាម ABA (USD Link)</a>`;
+      }
+      if (db.khrLink) {
+        qrHtml += `<a href="${db.khrLink}" target="_blank" class="btn btn-secondary">💳 ចុចបង់ប្រាក់តាម KHR Link</a>`;
+      }
+      qrSec.innerHTML = qrHtml;
+      updateConfirmButtonState();
+    }
+
+    function removeCartItem(idx) {
+      cart.splice(idx, 1);
+      if (cart.length === 0) showPage("menu");
+      else goToCheckout();
+    }
+
+    async function confirmPayment() {
+      const cfg = db.deliveryConfig;
+      const name = document.getElementById("cust-name").value.trim() || "ភ្ញៀវ";
+      const phone = document.getElementById("cust-phone").value.trim();
+      const zoneText = cfg.zoneText || "គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក";
+      const gps = document.getElementById("cust-gps").value.trim();
+      const address = document.getElementById("cust-address").value.trim();
+      const landmark = document.getElementById("cust-landmark").value.trim();
+      const delNote = document.getElementById("cust-del-note").value.trim();
+      const tableNo = document.getElementById("cust-table").value.trim();
+      const pref = document.getElementById("cust-pref").value;
+      const payMethod = document.getElementById("pay-method").value;
+      const payNote = document.getElementById("pay-note").value.trim();
+      const paySlip = document.getElementById("pay-slip-data").value;
+
+      if (cfg.showPhone && !phone) {
+        return alert("សូមបញ្ចូលលេខទូរស័ព្ទទំនាក់ទំនងរបស់អ្នក!");
+      }
+      if (orderType === "Delivery" && cfg.showAddress && !address && !gps) {
+        return alert("សូមបញ្ចូលអាសយដ្ឋានដឹកជញ្ជូន ឬចុចចាប់យកទីតាំង GPS!");
+      }
+      if (cfg.requirePaySlip && !paySlip) {
+        return alert("សូមបង្ហោះរូបភាពវិក្កយបត្របង់ប្រាក់ (Upload Payment) ជាមុនសិន ទើបអាចបញ្ជាក់ការកុម្ម៉ង់បាន!");
+      }
+
+      const nextNum = String(db.orders.length + 1).padStart(4, "0");
+      const orderNo = `LC-${nextNum}`;
+      const totalUsd = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const totalKhr = Math.round(totalUsd * db.rate);
+
+      const fullLocation = orderType === "Delivery"
+        ? `${address || 'តាម GPS'} (${zoneText}) ${landmark ? '| ជិត: ' + landmark : ''} ${gps ? '| GPS: ' + gps : ''}`
+        : (orderType === "Dine-in" ? `ញ៉ាំនៅហាង - តុលេខ: ${tableNo || 'N/A'}` : "ខ្ចប់យកផ្ទាល់ (Self Pick-up)");
+
+      const newOrder = {
+        orderNo,
+        orderType,
+        name,
+        phone: phone || "N/A",
+        address: fullLocation,
+        gps,
+        landmark,
+        delNote: delNote || "គ្មាន",
+        pref,
+        payMethod,
+        note: payNote || "គ្មាន",
+        paySlip,
+        items: [...cart],
+        usd: totalUsd.toFixed(2),
+        khr: totalKhr.toLocaleString(),
+        status: "Pending Confirmation",
+        time: new Date().toLocaleString()
+      };
+
+      db.orders.unshift(newOrder);
+      saveDB();
+
+      const ownerIdList = (db.ownerIds || "").split("\n").map(s => s.trim()).filter(Boolean);
+      if (db.botToken && ownerIdList.length > 0) {
+        const itemsText = newOrder.items.map(i => `• ${i.name} (${i.size}) x${i.qty} = $${(i.price*i.qty).toFixed(2)}`).join("\n");
+        const msg = `🍲 *ការកុម្ម៉ង់ថ្មី: ${orderNo}* (${orderType})\n👤 ឈ្មោះ: ${name}\n📞 ទូរស័ព្ទ: ${newOrder.phone}\n📍 ទីតាំង: ${fullLocation}\n🛵 ចំណាំអ្នកដឹក: ${newOrder.delNote}\n🥢 សម្ភារៈ: ${pref}\n💳 ការបង់ប្រាក់: ${payMethod} (${newOrder.note})\n💵 *សរុប: $${newOrder.usd} (៛${newOrder.khr})*\n\n*មុខម្ហូប:*\n${itemsText}`;
+        for (const cid of ownerIdList) {
+          try {
+            await fetch(`https://api.telegram.org/bot${db.botToken}/sendMessage`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chat_id: cid, text: msg, parse_mode: "Markdown" })
+            });
+            if (paySlip) {
+              const res = await fetch(paySlip);
+              const blob = await res.blob();
+              const formData = new FormData();
+              formData.append("chat_id", cid);
+              formData.append("caption", `📸 រូបភាពបង់ប្រាក់សម្រាប់ ${orderNo} (${name} - ${newOrder.phone})`);
+              formData.append("photo", blob, "payment_slip.jpg");
+              await fetch(`https://api.telegram.org/bot${db.botToken}/sendPhoto`, {
+                method: "POST",
+                body: formData
+              });
+            }
+          } catch (e) {}
+        }
+      }
+
+      cart = [];
+      document.getElementById("pay-slip-data").value = "";
+      document.getElementById("pay-slip-preview").classList.add("hidden");
+      document.getElementById("upload-slip-label").innerText = "📤 ចុចទីនេះដើម្បីជ្រើសរើសរូបភាពបង់ប្រាក់ពីទូរស័ព្ទ";
+
+      alert(`ការកុម្ម៉ង់លេខ ${orderNo} ត្រូវបានបញ្ជូនដោយជោគជ័យ!`);
+      document.getElementById("track-input").value = orderNo;
+      showPage("track");
+      findOrder();
+    }
+
+    function findOrder() {
+      const q = document.getElementById("track-input").value.trim().toLowerCase();
+      const resEl = document.getElementById("track-results");
+      if (!q) { resEl.innerHTML = ""; return; }
+      const matches = db.orders.filter(o => o.orderNo.toLowerCase() === q || (o.phone && o.phone.toLowerCase().includes(q)));
+      if (matches.length === 0) {
+        resEl.innerHTML = `<div class="card" style="text-align:center; color:var(--muted);">រកមិនឃើញការកុម្ម៉ង់ "${q}" ទេ។</div>`;
+        return;
+      }
+      resEl.innerHTML = matches.map(o => `
+        <div class="card">
+          <div class="flex-between">
+            <strong style="color:var(--gold); font-size:16px;">${o.orderNo} (${o.orderType || 'Delivery'})</strong>
+            <span class="badge">${o.status}</span>
+          </div>
+          <div style="font-size:12px; color:var(--muted); margin:4px 0 8px;">${o.time} • 👤 ${o.name || ''} (${o.phone})</div>
+          <div style="font-size:12px; color:#d1c4bf; margin-bottom:8px;">📍 ${o.address}</div>
+          <div style="font-size:13px; margin-bottom:8px;">
+            ${o.items.map(i => `<div>• ${i.name} (${i.size}) x ${i.qty}</div>`).join("")}
+          </div>
+          <div style="font-weight:700; color:var(--gold);">សរុប: $${o.usd} (៛${o.khr})</div>
+          ${o.paySlip ? `<img src="${o.paySlip}" class="slip-preview" style="margin-top:8px;" alt="Slip">` : ''}
+        </div>
+      `).join("");
+    }
+
+    function openAdmin() {
+      if (!adminUnlocked) {
+        const inputPin = prompt("បញ្ចូលលេខកូដសម្ងាត់បុគ្គលិក (PIN):");
+        if (inputPin !== db.pin) {
+          alert("លេខកូដ PIN មិនត្រឹមត្រូវទេ!");
+          return;
+        }
+        adminUnlocked = true;
+      }
+      renderAdmin();
+      showPage("admin");
+    }
+
+    function openAdminDeliveryTab() {
+      openAdmin();
+      const pillEl = document.getElementById("pill-delivery");
+      if (pillEl) showAdminTab("delivery", pillEl);
+    }
+
+    function showAdminTab(tab, el) {
+      ["items", "cats", "delivery", "branding", "payments", "orders", "staff"].forEach(t => {
+        document.getElementById("admin-" + t).classList.add("hidden");
+      });
+      el.parentElement.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      el.classList.add("active");
+      document.getElementById("admin-" + tab).classList.remove("hidden");
+      renderAdmin();
+    }
+
+    function toggleDeliveryOption(key) {
+      db.deliveryConfig[key] = !db.deliveryConfig[key];
+      saveDB();
+      renderAdmin();
+    }
+
+    function saveDeliverySettings() {
+      db.deliveryConfig.storeMapUrl = document.getElementById("cfg-store-map").value.trim();
+      db.deliveryConfig.zoneText = document.getElementById("cfg-zone-text").value.trim() || "គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក";
+      saveDB();
+      alert("រក្សាទុកការកំណត់ដឹកជញ្ជូន និងលីងទីតាំងហាងរួចរាល់!");
+    }
+
+    function renderAdmin() {
+      const totalOrders = db.orders.length;
+      const totalRev = db.orders.reduce((s, o) => s + parseFloat(o.usd || 0), 0);
+      document.getElementById("stat-orders").innerText = totalOrders;
+      document.getElementById("stat-revenue").innerText = `$${totalRev.toFixed(2)}`;
+
+      document.getElementById("dish-cat").innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join("");
+      
+      document.getElementById("admin-dish-list").innerHTML = db.dishes.map(d => `
+        <div class="card flex-between">
+          <div style="flex:1; padding-right:8px;">
+            <div style="font-weight:600;">${d.name} ${d.soldOut ? '<span class="sold-badge">SOLD OUT</span>' : ''}</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">${d.cat} | Mini:$${d.sizes.Mini} S:$${d.sizes.S} M:$${d.sizes.M} L:$${d.sizes.L} XL:$${d.sizes.XL}</div>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-sm btn-secondary" onclick="toggleSoldOut(${d.id})">${d.soldOut ? 'ដាក់លក់វិញ' : 'Sold Out'}</button>
+            <button class="btn btn-sm" style="background:#991b1b;" onclick="deleteDish(${d.id})">លុប</button>
+          </div>
+        </div>
+      `).join("");
+
+      document.getElementById("admin-cat-list").innerHTML = db.categories.map((c, idx) => `
+        <div class="card flex-between">
+          <span>${c}</span>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="renameCategory(${idx})">ប្តូរឈ្មោះ</button>
+            <button class="btn btn-sm" style="background:#991b1b; margin-left:4px;" onclick="deleteCategory(${idx})">លុប</button>
+          </div>
+        </div>
+      `).join("");
+
+      document.getElementById("cfg-store-map").value = db.deliveryConfig.storeMapUrl || "";
+      document.getElementById("cfg-zone-text").value = db.deliveryConfig.zoneText || "គិតថ្លៃដឹកតាមចម្ងាយជាក់ស្ដែង ទូទាត់ជាមួយអ្នកដឹក";
+
+      const toggleItems = [
+        { key: "enableDeliveryTab", label: "🛵 ប៊ូតុង «ដឹកជញ្ជូន (Delivery)»" },
+        { key: "enablePickupTab", label: "🛍️ ប៊ូតុង «ខ្ចប់យកផ្ទាល់ (Pick Up)»" },
+        { key: "enableDineinTab", label: "🍽️ ប៊ូតុង «ញ៉ាំនៅហាង (Dine-in)»" },
+        { key: "showName", label: "👤 ប្រអប់ «ឈ្មោះអតិថិជន»" },
+        { key: "showPhone", label: "📞 ប្រអប់ «លេខទូរស័ព្ទទំនាក់ទំនង»" },
+        { key: "showZone", label: "🗺️ ប្រអប់ «តំបន់ដឹកជញ្ជូន / ថ្លៃដឹក»" },
+        { key: "showGps", label: "📍 ប៊ូតុង និងប្រអប់ «ចាប់យកទីតាំង GPS»" },
+        { key: "showAddress", label: "🏠 ប្រអប់ «អាសយដ្ឋានលម្អិត»" },
+        { key: "showLandmark", label: "🏢 ប្រអប់ «កន្លែងសម្គាល់ (Landmark)»" },
+        { key: "showDelNote", label: "📝 ប្រអប់ «កំណត់ចំណាំសម្រាប់អ្នកដឹក»" },
+        { key: "showTable", label: "🪑 ប្រអប់ «លេខតុ (សម្រាប់ញ៉ាំនៅហាង)»" },
+        { key: "showCutlery", label: "🥢 ប្រអប់ «ជ្រើសរើសសម្ភារៈ (ស្លាបព្រា/ចង្កឹះ)»" },
+        { key: "requirePaySlip", label: "📸 តម្រូវឱ្យភ្ញៀវ Upload រូបបង់ប្រាក់ទើបចុច Confirm បាន" },
+        { key: "enableCOD", label: "💵 អនុញ្ញាតជម្រើស «គិតលុយពេលដឹកដល់ (COD)»" }
+      ];
+
+      document.getElementById("delivery-toggles-list").innerHTML = toggleItems.map(item => {
+        const isOn = db.deliveryConfig[item.key] !== false;
+        return `
+          <div class="toggle-row">
+            <span style="font-size:13px;">${item.label}</span>
+            <button class="toggle-btn ${isOn ? 'toggle-on' : 'toggle-off'}" onclick="toggleDeliveryOption('${item.key}')">
+              ${isOn ? 'ON (កំពុងបើក)' : 'OFF (កំពុងបិទ)'}
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("cfg-store-name").value = db.storeName || "";
+      document.getElementById("cfg-logo").value = db.logoUrl || "";
+      document.getElementById("cfg-banner").value = db.bannerUrl || "";
+      document.getElementById("cfg-rate").value = db.rate;
+      document.getElementById("cfg-qr").value = db.qrUrl;
+      document.getElementById("cfg-usd-link").value = db.usdLink;
+      document.getElementById("cfg-khr-link").value = db.khrLink;
+      document.getElementById("cfg-pin").value = db.pin;
+      document.getElementById("cfg-owner-ids").value = db.ownerIds || "123456789";
+      document.getElementById("cfg-bot-token").value = db.botToken || "";
+
+      const tgUser = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
+      if (tgUser) {
+        const isOwner = (db.ownerIds || "").includes(String(tgUser.id));
+        document.getElementById("signed-in-user").innerText = `${tgUser.first_name || ''} @${tgUser.username || tgUser.id} • ${isOwner ? 'owner' : 'staff'}`;
+      }
+
+      const ordEl = document.getElementById("admin-order-list");
+      if (db.orders.length === 0) {
+        ordEl.innerHTML = `<div class="card">មិនទាន់មានការកុម្ម៉ង់នៅឡើយទេ។</div>`;
+      } else {
+        ordEl.innerHTML = db.orders.map((o, idx) => `
+          <div class="card">
+            <div class="flex-between">
+              <strong style="color:var(--gold);">${o.orderNo} (${o.orderType || 'Delivery'})</strong>
+              <select style="width:auto; margin:0; padding:4px 8px;" onchange="updateOrderStatus(${idx}, this.value)">
+                <option ${o.status==='Pending Confirmation'?'selected':''}>Pending Confirmation</option>
+                <option ${o.status==='Paid & Preparing'?'selected':''}>Paid & Preparing</option>
+                <option ${o.status==='Out for Delivery'?'selected':''}>Out for Delivery</option>
+                <option ${o.status==='Completed'?'selected':''}>Completed</option>
+              </select>
+            </div>
+            <div style="font-size:12px; color:var(--muted); margin:4px 0;">👤 ${o.name || ''} | 📞 ${o.phone}</div>
+            <div style="font-size:12px; color:#e2d6d1; margin:4px 0;">📍 ${o.address}</div>
+            ${o.gps ? `<a href="${o.gps}" target="_blank" style="color:#4ade80; font-size:12px; display:inline-block; margin-bottom:4px;">🗺️ បើកមើលទីតាំងភ្ញៀវលើ Google Maps</a>` : ''}
+            <div style="font-size:12px; color:var(--muted);">🛵 ចំណាំអ្នកដឹក: ${o.delNote || '-'} | 💳 ${o.payMethod || ''} (${o.note})</div>
+            <div style="font-size:13px; margin:6px 0;">${o.items.map(i => `${i.name} (${i.size}) x${i.qty}`).join(", ")}</div>
+            <div style="font-weight:700; color:var(--gold);">$${o.usd} (៛${o.khr})</div>
+            ${o.paySlip ? `<div style="margin-top:8px;"><span style="font-size:11px; color:var(--green);">📸 រូបភាពបង់ប្រាក់របស់ភ្ញៀវ៖</span><img src="${o.paySlip}" class="slip-preview" alt="Payment Slip"></div>` : ''}
+          </div>
+        `).join("");
+      }
+    }
+
+    function saveDish() {
+      const name = document.getElementById("dish-name").value.trim();
+      const cat = document.getElementById("dish-cat").value;
+      const img = document.getElementById("dish-img-url").value.trim();
+      if (!name) return alert("សូមបញ្ចូលឈ្មោះមុខម្ហូប!");
+      const sizes = {
+        Mini: parseFloat(document.getElementById("p-mini").value) || 0,
+        S: parseFloat(document.getElementById("p-s").value) || 0,
+        M: parseFloat(document.getElementById("p-m").value) || 0,
+        L: parseFloat(document.getElementById("p-l").value) || 0,
+        XL: parseFloat(document.getElementById("p-xl").value) || 0
+      };
+      db.dishes.push({ id: Date.now(), name, cat, img, soldOut: false, sizes });
+      saveDB();
+      document.getElementById("dish-name").value = "";
+      document.getElementById("dish-img-url").value = "";
+      renderAdmin();
+      renderMenu();
+    }
+
+    function toggleSoldOut(id) {
+      const dish = db.dishes.find(d => d.id === id);
+      if (dish) dish.soldOut = !dish.soldOut;
+      saveDB();
+      renderAdmin();
+      renderMenu();
+    }
+
+    function deleteDish(id) {
+      db.dishes = db.dishes.filter(d => d.id !== id);
+      saveDB();
+      renderAdmin();
+      renderMenu();
+    }
+
+    function addCategory() {
+      const name = document.getElementById("new-cat-name").value.trim();
+      if (!name) return;
+      db.categories.push(name);
+      saveDB();
+      document.getElementById("new-cat-name").value = "";
+      renderAdmin();
+      renderMenu();
+    }
+
+    function renameCategory(idx) {
+      const oldName = db.categories[idx];
+      const newName = prompt("ប្តូរឈ្មោះប្រភេទមុខម្ហូប:", oldName);
+      if (!newName || newName.trim() === "") return;
+      db.categories[idx] = newName.trim();
+      db.dishes.forEach(d => { if (d.cat === oldName) d.cat = newName.trim(); });
+      saveDB();
+      renderAdmin();
+      renderMenu();
+    }
+
+    function deleteCategory(idx) {
+      const catName = db.categories[idx];
+      db.categories.splice(idx, 1);
+      db.dishes = db.dishes.filter(d => d.cat !== catName);
+      saveDB();
+      renderAdmin();
+      renderMenu();
+    }
+
+    function saveBranding() {
+      db.storeName = document.getElementById("cfg-store-name").value.trim() || "Little Chef Hotpot";
+      db.logoUrl = document.getElementById("cfg-logo").value.trim();
+      db.bannerUrl = document.getElementById("cfg-banner").value.trim();
+      saveDB();
+      alert("រក្សាទុកស្លាកសញ្ញាហាង (Branding) រួចរាល់!");
+    }
+
+    function savePaymentSettings() {
+      db.rate = parseFloat(document.getElementById("cfg-rate").value) || 4100;
+      db.qrUrl = document.getElementById("cfg-qr").value.trim();
+      db.usdLink = document.getElementById("cfg-usd-link").value.trim();
+      db.khrLink = document.getElementById("cfg-khr-link").value.trim();
+      saveDB();
+      alert("រក្សាទុកព័ត៌មាន KHQR និងការទូទាត់ប្រាក់រួចរាល់!");
+    }
+
+    function updateOrderStatus(idx, status) {
+      db.orders[idx].status = status;
+      saveDB();
+    }
+
+    function saveStaffSettings() {
+      db.pin = document.getElementById("cfg-pin").value.trim() || "1234";
+      db.ownerIds = document.getElementById("cfg-owner-ids").value.trim();
+      db.botToken = document.getElementById("cfg-bot-token").value.trim();
+      saveDB();
+      alert("រក្សាទុកព័ត៌មានបុគ្គលិក និង Telegram រួចរាល់!");
+    }
+
+    renderMenu();
+  </script>
+</body>
+</html>
